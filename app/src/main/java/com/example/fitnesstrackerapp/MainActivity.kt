@@ -13,6 +13,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -22,6 +23,7 @@ import com.google.android.gms.location.LocationServices
 
 class MainActivity : AppCompatActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    @RequiresApi(Build.VERSION_CODES.N)
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,21 +36,21 @@ class MainActivity : AppCompatActivity() {
 
         ) { permissions ->
 
-                when {
-                    permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                        // Precise location access granted.
-                        println("ACCESS_FINE_LOCATION granted     ${fusedLocationClient.lastLocation}")
+            when {
+                permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    // Precise location access granted.
+                    println("ACCESS_FINE_LOCATION granted     ${fusedLocationClient.lastLocation}")
 
-                    }
-                    permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                        // Only approximate location access granted.
-                        val someStuff = fusedLocationClient.getLastLocation().result
-                        println("ACCESS_COARSE_LOCATION granted ${someStuff}")
-                    } else -> {
-                    // No location access granted.
-                        println("no access granted")
                 }
-                }
+                permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    // Only approximate location access granted.
+                    val someStuff = fusedLocationClient.getLastLocation().result
+                    println("ACCESS_COARSE_LOCATION granted ${someStuff}")
+                } else -> {
+                // No location access granted.
+                println("no access granted")
+            }
+            }
 
         }
         locationPermissionRequest.launch(arrayOf(
