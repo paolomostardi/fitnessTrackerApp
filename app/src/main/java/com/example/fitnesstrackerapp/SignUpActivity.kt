@@ -11,6 +11,8 @@ class SignUpActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var database = Database(this)
+
         binding = ActivitySignUpBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -26,9 +28,10 @@ class SignUpActivity : AppCompatActivity() {
             if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
                 if (pass == confirmPass) {
 
-                    val accountRegisteredStatus = true // change to DATABASE API check
+                    //var registerDetails = true // change to DATABASE API check
+                    val accountRegisteredStatus = database.Users().add("placeholder-username", email, pass)
 
-                    if (accountRegisteredStatus) {
+                    if (accountRegisteredStatus > -1) {
                         val intent = Intent(this, SignInActivity::class.java)
                         startActivity(intent)
                     } else {

@@ -12,6 +12,8 @@ class SignInActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var database = Database(this)
+
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -26,7 +28,8 @@ class SignInActivity : AppCompatActivity() {
 
             if (email.isNotEmpty() && pass.isNotEmpty()) {
 
-                val loginValid = true // change to DATABASE API check
+                //var loginDetails = true // change to DATABASE API check
+                val loginValid = database.Users().existsByDetails(email, pass)
 
                 if (loginValid) {
                     val intent = Intent(this, MainActivity::class.java)
