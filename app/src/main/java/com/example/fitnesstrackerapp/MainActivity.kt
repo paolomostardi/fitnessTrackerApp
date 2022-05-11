@@ -2,57 +2,58 @@ package com.example.fitnesstrackerapp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Build
 import android.os.Bundle
-import android.widget.Button
+import android.util.Log
+import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+class MainActivity : Activity(), LocationListener {
+    protected var locationManager: LocationManager? = null
+    protected var locationListener: LocationListener? = null
+    protected var context: Context? = null
+    var txtLat: TextView? = null
+    var lat: String? = null
+    var provider: String? = null
+    protected var latitude: String? = null
+    protected var longitude: String? = null
+    protected var gps_enabled = false
+    protected var network_enabled = false
+
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        println("---------------- App starts ----------------")
-        // todo make this available for any build
-        val locationPermissionRequest = registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions()
+        txtLat = findViewById<View>(R.id.textview1) as TextView
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+    }
 
-        ) { permissions ->
+    override fun onLocationChanged(location: Location) {
+        txtLat = findViewById<View>(R.id.textview1) as TextView
+        txtLat!!.text = "Latitude:" + location.latitude + ", Longitude:" + location.longitude
+        location.speed
+    }
 
-                when {
-                    permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-                        // Precise location access granted.
-                        println("ACCESS_FINE_LOCATION granted     ${fusedLocationClient.lastLocation}")
+    override fun onProviderDisabled(provider: String) {
+        Log.d("Latitude", "disable")
+    }
 
-                    }
-                    permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-                        // Only approximate location access granted.
-                        val someStuff = fusedLocationClient.getLastLocation().result
-                        println("ACCESS_COARSE_LOCATION granted ${someStuff}")
-                    } else -> {
-                    // No location access granted.
-                        println("no access granted")
-                }
-                }
+    override fun onProviderEnabled(provider: String) {
+        Log.d("Latitude", "enable")
+    }
 
-        }
-        locationPermissionRequest.launch(arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION))
+    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+        Log.d("Latitude", "status")
     }
 }
