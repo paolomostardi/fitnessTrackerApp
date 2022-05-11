@@ -18,6 +18,8 @@ import com.google.android.gms.location.LocationServices
 
 
 
+
+
 class MainActivity : Activity(), LocationListener {
     protected var locationManager: LocationManager? = null
     protected var locationListener: LocationListener? = null
