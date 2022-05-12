@@ -33,7 +33,7 @@ class SignUpActivity : AppCompatActivity() {
 
                     if (accountRegisteredStatus > -1) {
                         val intent = Intent(this, SignInActivity::class.java)
-                        startActivity(intent)
+
                     } else {
                         Toast.makeText(this, "Incorrect details", Toast.LENGTH_SHORT).show()
                     }
