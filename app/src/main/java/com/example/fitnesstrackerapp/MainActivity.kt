@@ -1,45 +1,51 @@
 package com.example.fitnesstrackerapp
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Bundle
-import android.util.Log
-import android.view.View
-import android.widget.TextView
-import android.widget.Toolbar
+import android.widget.*
 
-import androidx.activity.result.ActivityResultCaller
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.content.ContextCompat
 
-import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.activity_main.*
+
+import com.google.maps.android.SphericalUtil
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.navigation.NavigationView
 import kotlinx.android.synthetic.main.routine_main.*
 
 
-class MainActivity : Activity(), LocationListener {
-    protected var locationManager: LocationManager? = null
-    protected var locationListener: LocationListener? = null
-    protected var context: Context? = null
-    var txtLat: TextView? = null
-    var lat: String? = null
-    var provider: String? = null
-    protected var latitude: String? = null
-    protected var longitude: String? = null
-    protected var gps_enabled = false
-    protected var network_enabled = false
-    private lateinit var  toolbar: Toolbar
+
+import android.os.Bundle
+import android.view.MenuItem
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.appcompat.app.AppCompatActivity
+
+
+class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavigationItemSelectedListener {
+    // variables for gps
+    private lateinit var locationManager: LocationManager
+    private lateinit var tvGpsLocation: TextView
+    private val listOfLocations  = mutableListOf<Location>()
+    private val locationPermissionCode = 2
+    private var length = 0f.toDouble()
+
+
+    private var updateLocation = false
+
+
+    private lateinit var toolbar : Toolbar
+    private lateinit var drawerLayout : DrawerLayout
+    private lateinit var navigationView : NavigationView
 
 
 
@@ -59,51 +65,159 @@ class MainActivity : Activity(), LocationListener {
 
 
 
-    @SuppressLint("MissingPermission", "SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         println("starting the activity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        requestLocationPermission()
-        toolbar = findViewById<Toolbar>(R.id.main_toolbar)
-        setActionBar(toolbar)
-        txtLat = findViewById<View>(R.id.textview1) as TextView
-        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-        locationManager!!.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+
+        // location part
+        val button: Button = findViewById(R.id.getLocation)
+        val button2: Button = findViewById(R.id.getLocation2)
+        button.setOnClickListener {
+            println("getting the location")
+            tvGpsLocation = findViewById(R.id.textView)
+            tvGpsLocation.text = "distance : " + length.toInt()
+            updateLocation = true
+            getLocation()
+            println("finished with the location")
+
+        }
+        button2.setOnClickListener {
+            updateLocation = false
+
+        }
 
 
+
+        // menu part
+
+        toolbar = findViewById(R.id.main_toolbar)
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.nav_view)
+        setSupportActionBar(toolbar)
+        val actionBarDrawerToggle = ActionBarDrawerToggle(this,drawerLayout,toolbar,R.string.app_name,R.string.app_name)
+        drawerLayout.addDrawerListener(actionBarDrawerToggle)
+        actionBarDrawerToggle.syncState()
+        navigationView.bringToFront()
+        navigationView.setNavigationItemSelectedListener(this)
+
+
+    }
+
+    private fun getLocation() {
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+    }
+
+    // ciaos
+    // Xiao
+    // ciao
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        if (item.title == "Home") {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+        if (item.title == "Store") {
+            val intent = Intent(this, Store::class.java)
+            startActivity(intent)
+        }
+        //todo create setting page
+        if (item.title == "Settings") {
+            val intent = Intent(this, Store::class.java)
+            startActivity(intent)
+        }
+
+        if (item.title == "Routines") {
+            val intent = Intent(this, RoutineTracker::class.java)
+            startActivity(intent)
+        }
+        if (item.title == "LeaderBoard") {
+            val intent = Intent(this, leaderBoard::class.java)
+            startActivity(intent)
+        }
+
+        println(item.title)
+
+
+
+
+        return true
+    }
+
+    override fun onLocationChanged(location: Location) {
+        tvGpsLocation = findViewById(R.id.textView)
+        tvGpsLocation.text = "distance : " + length.toInt()
+        listOfLocations.add(location)
+        println(listOfLocations)
+        updateLength()
+        println("-----------------------------")
+        println("the current length is $length")
+
+    }
+
+    private fun updateLength(){
+        val latLngs = mutableListOf<LatLng>()
+        for (loc in listOfLocations) {
+            latLngs.add(LatLng(loc.latitude, loc.longitude))
+        }
+        length = SphericalUtil.computeLength(latLngs)
+        length /= 50
+
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == locationPermissionCode) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
+            }
+            else {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun renderPages(){
 
         //STORE PAGE -CHANGE-
         // setup recycler view
+        println("creating store page")
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        print("testing ")
         recyclerView.layoutManager = LinearLayoutManager(this)
+        println("setting display and store items")
         //set and display store items
-        recyclerView.adapter = CustomAdapter(img,texts,desc)
+        recyclerView.adapter = CustomAdapter(img, texts, desc)
         //set total points
         val currentPointTitle = "Total Points: "
         //change to variable that calculates points based on the distance
         val currentPoints = 2000
         val theTextView = findViewById<TextView>(R.id.totalPointsBanner)
-        theTextView.text = currentPointTitle+currentPoints
-
+        theTextView.text = currentPointTitle + currentPoints
 
 
         //LEADERBOARD PAGE
+        println("creating leaderboard page")
         // setup recycler view
         val recyclerView2 = findViewById<RecyclerView>(R.id.recycler_view2)
         recyclerView.layoutManager = LinearLayoutManager(this)
         //set and display usernames
-        recyclerView2.adapter = CustomAdapter2(usernames,points)
+        recyclerView2.adapter = CustomAdapter2(usernames, points)
         //leaderboard
         val leaderboardTitle = "Leaderboard position: "
         //if username == username in array from database
         // currentPosition == username index
         val currentPosition = 10
         val leaderboardView = findViewById<TextView>(R.id.leaderboardBanner)
-        leaderboardView.text = leaderboardTitle+currentPosition
+        leaderboardView.text = leaderboardTitle + currentPosition
 
 
         //ROUTINE PAGE
+        println("creating routine page")
         var todoList = mutableListOf(
             //dummy data - can delete
             Todo("PushUps", false),
@@ -117,7 +231,7 @@ class MainActivity : Activity(), LocationListener {
         rvTodos.adapter = adapter
         rvTodos.layoutManager = LinearLayoutManager(this)
 
-        btnAddTodo.setOnClickListener{
+        btnAddTodo.setOnClickListener {
             val title = etTodo.text.toString()
             val todo = Todo(title, false)
             todoList.add(todo)
@@ -126,33 +240,8 @@ class MainActivity : Activity(), LocationListener {
 
     }
 
-    override fun onLocationChanged(location: Location) {
-        txtLat = findViewById<View>(R.id.textview1) as TextView
-        val latitude =  location.latitude
-        val longitude = location.longitude
-        val speed = location.speed
-        txtLat!!.text = "Latitude:" + latitude + ", Longitude:" + longitude
-        println("CURRENT LOCATION CHANGED $latitude , $longitude, $speed ")
-    }
-
-    override fun onProviderDisabled(provider: String) {
-        Log.d("Latitude", "disable")
-    }
-
-    override fun onProviderEnabled(provider: String) {
-        Log.d("Latitude", "enable")
-    }
-
-    override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-        Log.d("Latitude", "status")
-    }
-
-    private fun requestLocationPermission() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            ),0
-        )
-    }
 }
+
+
+
+

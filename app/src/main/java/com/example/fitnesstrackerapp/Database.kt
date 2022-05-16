@@ -42,7 +42,6 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             values.putNull(FIRST_NAME)
             values.putNull(LAST_NAME)
             values.put(EMAIL, email)
-            //encrypt password here!!!
             values.put(PASSWORD, password)
 
             val success = writableDatabase.insert(TABLE_NAME, null, values)
