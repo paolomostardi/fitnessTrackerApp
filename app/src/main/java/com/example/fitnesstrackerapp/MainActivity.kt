@@ -139,6 +139,15 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
             val intent = Intent(this, leaderBoard::class.java)
             startActivity(intent)
         }
+        if (item.title == "UserSearch") {
+            val intent = Intent(this, SearchFriends::class.java)
+            startActivity(intent)
+        }
+        if (item.title == "Log out") {
+            val intent = Intent(this, SignInActivity::class.java)
+            startActivity(intent)
+        }
+
 
         println(item.title)
 
@@ -203,17 +212,7 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
         //LEADERBOARD PAGE
         println("creating leaderboard page")
         // setup recycler view
-        val recyclerView2 = findViewById<RecyclerView>(R.id.recycler_view2)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        //set and display usernames
-        recyclerView2.adapter = CustomAdapter2(usernames, points)
-        //leaderboard
-        val leaderboardTitle = "Leaderboard position: "
-        //if username == username in array from database
-        // currentPosition == username index
-        val currentPosition = 10
-        val leaderboardView = findViewById<TextView>(R.id.leaderboardBanner)
-        leaderboardView.text = leaderboardTitle + currentPosition
+
 
 
         //ROUTINE PAGE

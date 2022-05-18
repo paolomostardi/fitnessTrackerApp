@@ -148,6 +148,26 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             writableDatabase.update(TABLE_NAME,contentValues,whereClause,whereArgs)
 
         }
+        @SuppressLint("Range")
+        fun getPositionByUsername(username: String): Int{
+            var stmt = "select * from $TABLE_NAME ORDER BY $POINTS DESC"
+            var cursor = readableDatabase.rawQuery(stmt, null)
+            val stringList = mutableListOf<String>()
+            var counter = 0
+            if (!existsByUsername(username))
+                return -1
+            cursor.moveToFirst()
+                do {
+                    var element = cursor.getString(cursor.getColumnIndex(USERNAME))
+                    if (element == username)
+                        break
+                    counter++
+                } while (cursor.moveToNext())
+
+            return counter + 1
+        }
+
+
 
         fun addPoints(username: String,points: Int){
             var stmt = "UPDATE $TABLE_NAME set $POINTS = $POINTS+$points where $username = \"$username\""

@@ -33,6 +33,7 @@
         <activity android:name=".leaderBoard"/>
         <activity android:name=".RoutineTracker"/>
         <activity android:name=".Store"/>
+        <activity android:name=".SearchFriends"/>
     </application>
 
 </manifest>
