@@ -14,6 +14,7 @@ class SignInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         var database = Database(this)
 
+
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -30,7 +31,9 @@ class SignInActivity : AppCompatActivity() {
 
                 //var loginDetails = true // change to DATABASE API check
                 val loginValid = database.Users().existsByDetails(email, pass)
-
+                println("DATABASE INFOS and stuff ---------------------------------------------")
+                database.Users().addDummyData()
+                val a = database.Users().usernameContainsString("paolo")
                 if (loginValid) {
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)

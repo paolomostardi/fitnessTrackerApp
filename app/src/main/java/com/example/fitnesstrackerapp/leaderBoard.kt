@@ -11,6 +11,8 @@ class leaderBoard : AppCompatActivity() {
 
 
     //pass ad name and description
+
+    private val database = Database(this)
     private val usernames = arrayOf("Username1","Username 2","Username 3","Username 4")
     private val points = arrayOf(1000,200,3000,10)
 

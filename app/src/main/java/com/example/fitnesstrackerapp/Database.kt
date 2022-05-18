@@ -1,5 +1,6 @@
 package com.example.fitnesstrackerapp
 
+import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
@@ -28,15 +29,19 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
         val FIRST_NAME = "first_name"
         val LAST_NAME = "last_name"
         val PASSWORD = "password"
+        val POINTS = "points"
 
         fun createTable(db:SQLiteDatabase?) {
-            val query = "create table $TABLE_NAME ($ID integer primary key autoincrement, $USERNAME text, $EMAIL text, $FIRST_NAME text, $LAST_NAME text, $PASSWORD text)"
+            val query = "create table $TABLE_NAME ($ID integer primary key autoincrement, $USERNAME text, $EMAIL text, $FIRST_NAME text, $LAST_NAME text, $PASSWORD text,$POINTS integer DEFAULT 0)"
             db?.execSQL(query)
         }
 
         fun add(username:String, email:String, password:String): Long {
             //user is not required to enter first and last name on account creation
-
+            if (Users().existsByUsername(username))
+                return -1
+            if (Users().existsByEmail(email))
+                return -1
             val values = ContentValues()
             values.put(USERNAME, username)
             values.putNull(FIRST_NAME)
@@ -59,6 +64,25 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             return exists
         }
 
+        fun existsByUsername(username:String):Boolean {
+            var exists = false
+            val stmt = "select * from $TABLE_NAME where $USERNAME = \"$username\" "
+            val cursor = readableDatabase.rawQuery(stmt, null)
+            exists = cursor.moveToFirst()
+            if (exists) return true
+            return false
+        }
+
+        fun existsByEmail(email:String):Boolean {
+            var exists = false
+            val stmt = "select * from $TABLE_NAME where $EMAIL = \"$email\" "
+            val cursor = readableDatabase.rawQuery(stmt, null)
+            exists = cursor.moveToFirst()
+            if (exists) return true
+            return false
+        }
+
+
         fun existsByDetails(usernameOrEmail:String, password: String):Boolean {
             var exists = false
             var stmt = "select * from $TABLE_NAME where ($USERNAME = \"$usernameOrEmail\" and $PASSWORD = \"$password\")"
@@ -73,6 +97,90 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             readableDatabase.close()
             return exists
         }
+
+
+
+        @SuppressLint("Range")
+        fun usernameContainsString(username:String): MutableList<String>{
+
+            var stmt = "select * from $TABLE_NAME where ($USERNAME LIKE \"%$username%\" )"
+            var cursor = readableDatabase.rawQuery(stmt, null)
+            val stringList = mutableListOf<String>()
+            cursor.moveToFirst()
+
+            println("searching stuff -----------------------------------------------------------")
+            if (cursor.count > 0) {
+                do {
+                    var element = cursor.getString(cursor.getColumnIndex(USERNAME))
+                    stringList.add(element)
+                    println("found some one $element")
+                } while (cursor.moveToNext())
+            }
+            else{
+                println("no values found")
+            }
+            return stringList
+        }
+        fun addDummyData(){
+            Users().add("username","email@gmail.com","password")
+            Users().add("username1","email1@gmail.com","password")
+            Users().add("username2","email2@gmail.com","password")
+            Users().add("username3","email3@gmail.com","password")
+            Users().add("username4","email4@gmail.com","password")
+            Users().add("username5","email5@gmail.com","password")
+            Users().add("paolomostardi","email6@gmail.com","password")
+
+            Users().setPoints("username",100)
+            Users().setPoints("username1",101)
+            Users().setPoints("username2",102)
+            Users().setPoints("username3",99)
+            Users().setPoints("username4",104)
+            Users().setPoints("username5",105)
+            returnUsersByPoints()
+        }
+
+        private fun setPoints(username: String,points: Int){
+            var stmt = "UPDATE $TABLE_NAME set $POINTS = 110 "
+            val contentValues = ContentValues()
+            contentValues.put(POINTS,points)
+            val whereClause = "$USERNAME=?"
+            val whereArgs = arrayOf(username)
+            writableDatabase.update(TABLE_NAME,contentValues,whereClause,whereArgs)
+
+        }
+
+        fun addPoints(username: String,points: Int){
+            var stmt = "UPDATE $TABLE_NAME set $POINTS = $POINTS+$points where $username = \"$username\""
+            writableDatabase.rawQuery(stmt, null)
+        }
+        @SuppressLint("Range")
+        fun returnUsersByPoints(): Pair<MutableList<Int>,MutableList<String>>{
+            var stmt = "select * from $TABLE_NAME ORDER BY $POINTS DESC"
+            var cursor = readableDatabase.rawQuery(stmt, null)
+            val stringList = mutableListOf<String>()
+            val integerList = mutableListOf<Int>()
+            cursor.moveToFirst()
+
+            println("--------------------------- list of users by points -----------------------------------------------------------")
+            if (cursor.count > 0) {
+                do {
+                    var element = cursor.getString(cursor.getColumnIndex(USERNAME))
+                    stringList.add(element)
+                    var element2 = cursor.getInt(cursor.getColumnIndex(POINTS))
+                    integerList.add(element2)
+                    println("found some one $element , points: $element2")
+                } while (cursor.moveToNext())
+            }
+            else{
+                println("no values found")
+            }
+            return Pair(integerList,stringList)
+        }
+        fun deleteUser(){
+
+        }
+
+
     }
 
 
@@ -81,6 +189,7 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
 
     override fun onCreate(db:SQLiteDatabase?) {
         Users().createTable(db)
+
     }
 
     override fun onUpgrade(db:SQLiteDatabase?, oldVersion:Int, newVersion:Int) {
