@@ -191,8 +191,6 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             val stringList = mutableListOf<String>()
             val integerList = mutableListOf<Int>()
             cursor.moveToFirst()
-
-            println("--------------------------- list of users by points -----------------------------------------------------------")
             if (cursor.count > 0) {
                 do {
                     var element = cursor.getString(cursor.getColumnIndex(USERNAME))
