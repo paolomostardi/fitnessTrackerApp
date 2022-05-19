@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fitnesstrackerapp.databinding.ActivitySignInBinding
+import kotlinx.android.synthetic.main.activity_sign_up.*
 
 
 class SignInActivity : AppCompatActivity() {
@@ -14,7 +15,11 @@ class SignInActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         var database = Database(this)
 
-
+        if (MyApplication.loggedin)
+        {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
         binding = ActivitySignInBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -36,6 +41,8 @@ class SignInActivity : AppCompatActivity() {
                 val a = database.Users().usernameContainsString("paolo")
                 if (loginValid) {
                     val intent = Intent(this, MainActivity::class.java)
+                    MyApplication.username = email
+                    MyApplication.loggedin = true
                     startActivity(intent)
                 } else {
                     Toast.makeText(this, "Incorrect details", Toast.LENGTH_SHORT).show()

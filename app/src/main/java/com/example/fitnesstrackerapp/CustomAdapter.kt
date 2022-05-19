@@ -12,7 +12,6 @@ class CustomAdapter(val img:Array<Int>,val text:Array<String>,val desc:Array<Str
 
     class CustomViewHolder(itemView: View): RecyclerView.ViewHolder(itemView){
         fun bindValue(image: Int,txt: String, desc: String){
-            itemView.findViewById<ImageView>(R.id.imageView).setImageResource(image)
             itemView.findViewById<TextView>(R.id.text1).text = txt
             itemView.findViewById<TextView>(R.id.text2).text = desc
 

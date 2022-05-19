@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
     // variables for gps
     private lateinit var locationManager: LocationManager
     private lateinit var tvGpsLocation: TextView
-    private val listOfLocations  = mutableListOf<Location>()
+    private var listOfLocations  = mutableListOf<Location>()
     private val locationPermissionCode = 2
     private var length = 0f.toDouble()
 
@@ -49,30 +49,17 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
 
 
 
-    //STORE PAGE
-    //pass multiple ads images
-    private val img = arrayOf(R.drawable.ad,R.drawable.ad1,R.drawable.ad2,R.drawable.ad3)
-    //pass ad name and description
-    private val texts = arrayOf("Ad","Ad 1","Ad 2","Ad 3")
-    private val desc = arrayOf("1000 points","2000 points","3000 points","4000 points")
-
-
-    //LEADERBOARD PAGE
-    //pass ad name and description
-    private val usernames = arrayOf("Username1","Username 2","Username 3","Username 4")
-    private val points = arrayOf(1000,200,3000,10)
-
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         println("starting the activity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         // location part
+        val database = Database(this)
+        val username = MyApplication.username
         val button: Button = findViewById(R.id.getLocation)
         val button2: Button = findViewById(R.id.getLocation2)
+        val gainPointsButton = findViewById<Button>(R.id.convertToPoints)
         button.setOnClickListener {
             println("getting the location")
             tvGpsLocation = findViewById(R.id.textView)
@@ -81,6 +68,11 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
             getLocation()
             println("finished with the location")
 
+        }
+        gainPointsButton.setOnClickListener{
+            database.Users().addPoints(username,length.toInt())
+            length = 0.0
+            listOfLocations = mutableListOf<Location>()
         }
         button2.setOnClickListener {
             updateLocation = false
@@ -105,10 +97,13 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
     }
 
     private fun getLocation() {
+        println("getting the location")
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            println("requesting permission")
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
         }
+        println("requesting location updates")
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
     }
 
@@ -144,6 +139,8 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
             startActivity(intent)
         }
         if (item.title == "Log out") {
+            MyApplication.loggedin = false
+            MyApplication.username = ""
             val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
         }
@@ -158,6 +155,7 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
     }
 
     override fun onLocationChanged(location: Location) {
+        println("finding the text view")
         tvGpsLocation = findViewById(R.id.textView)
         tvGpsLocation.text = "distance : " + length.toInt()
         listOfLocations.add(location)
@@ -169,12 +167,14 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
     }
 
     private fun updateLength(){
+        println("updating the length")
         val latLngs = mutableListOf<LatLng>()
         for (loc in listOfLocations) {
             latLngs.add(LatLng(loc.latitude, loc.longitude))
         }
+        println("computing the length")
         length = SphericalUtil.computeLength(latLngs)
-        length /= 50
+        length /= 10
 
     }
 
@@ -190,54 +190,6 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
         }
     }
 
-    fun renderPages(){
-
-        //STORE PAGE -CHANGE-
-        // setup recycler view
-        println("creating store page")
-        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
-        print("testing ")
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        println("setting display and store items")
-        //set and display store items
-        recyclerView.adapter = CustomAdapter(img, texts, desc)
-        //set total points
-        val currentPointTitle = "Total Points: "
-        //change to variable that calculates points based on the distance
-        val currentPoints = 2000
-        val theTextView = findViewById<TextView>(R.id.totalPointsBanner)
-        theTextView.text = currentPointTitle + currentPoints
-
-
-        //LEADERBOARD PAGE
-        println("creating leaderboard page")
-        // setup recycler view
-
-
-
-        //ROUTINE PAGE
-        println("creating routine page")
-        var todoList = mutableListOf(
-            //dummy data - can delete
-            Todo("PushUps", false),
-            Todo("PullUps", false),
-            Todo("SitUps", false),
-            Todo("Crunches", false),
-            Todo("BenchPress", false)
-        )
-
-        val adapter = TodoAdapter(todoList)
-        rvTodos.adapter = adapter
-        rvTodos.layoutManager = LinearLayoutManager(this)
-
-        btnAddTodo.setOnClickListener {
-            val title = etTodo.text.toString()
-            val todo = Todo(title, false)
-            todoList.add(todo)
-            adapter.notifyItemInserted(todoList.size - 1)
-        }
-
-    }
 
 }
 

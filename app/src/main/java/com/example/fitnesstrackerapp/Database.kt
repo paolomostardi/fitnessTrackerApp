@@ -17,10 +17,6 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
     }
 
 
-
-
-
-
     inner class Users {
         val TABLE_NAME = "users"
         val ID = "id"
@@ -167,11 +163,26 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             return counter + 1
         }
 
-
+        @SuppressLint("Range")
+        fun getPointsByUsername(username: String): Int{
+            var exists = false
+            val stmt = "select * from $TABLE_NAME where $USERNAME = \"$username\" "
+            val cursor = readableDatabase.rawQuery(stmt, null)
+            exists = cursor.moveToFirst()
+            if(exists && cursor.getColumnIndex(POINTS) > -1)
+                return cursor.getInt(cursor.getColumnIndex(POINTS))
+            return -1
+        }
 
         fun addPoints(username: String,points: Int){
-            var stmt = "UPDATE $TABLE_NAME set $POINTS = $POINTS+$points where $username = \"$username\""
-            writableDatabase.rawQuery(stmt, null)
+            val pointsToPut = getPointsByUsername(username)
+            if (pointsToPut < 0 )
+                return
+            val contentValues = ContentValues()
+            contentValues.put(POINTS, points + pointsToPut)
+            val whereClause = "$USERNAME=?"
+            val whereArgs = arrayOf(username)
+            writableDatabase.update(TABLE_NAME,contentValues,whereClause,whereArgs)
         }
         @SuppressLint("Range")
         fun returnUsersByPoints(): Pair<MutableList<Int>,MutableList<String>>{
