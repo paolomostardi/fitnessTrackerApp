@@ -205,8 +205,9 @@ class Database(var context:Context): SQLiteOpenHelper(context, DATABASE_NAME, nu
             }
             return Pair(integerList,stringList)
         }
-        fun deleteUser(){
-
+        fun deleteUser(username: String) : Int {
+            println("deleting user $username")
+            return writableDatabase.delete(TABLE_NAME,USERNAME + "= \"$username\"",null)
         }
 
 

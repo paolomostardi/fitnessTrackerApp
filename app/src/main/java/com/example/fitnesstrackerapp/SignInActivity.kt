@@ -17,6 +17,7 @@ class SignInActivity : AppCompatActivity() {
 
         if (MyApplication.loggedin)
         {
+            println("user logged in")
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
@@ -54,15 +55,15 @@ class SignInActivity : AppCompatActivity() {
             }
         }
     }
-
-    override fun onStart() {
-        super.onStart()
-
-        //get user from database
-//        if(user != null){
-//            val intent = Intent(this, MainActivity::class.java)
-//            startActivity(intent)
-//        }
-        //DATABASE API
+    override fun onResume() {
+        super.onResume()
+        if (MyApplication.loggedin)
+        {
+            println("user logged in")
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
     }
+
+
 }

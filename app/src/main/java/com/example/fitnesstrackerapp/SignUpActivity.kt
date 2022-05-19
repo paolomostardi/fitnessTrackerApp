@@ -31,13 +31,12 @@ class SignUpActivity : AppCompatActivity() {
 
                     //var registerDetails = true // change to DATABASE API check
                     val accountRegisteredStatus = database.Users().add(username, email, pass)
-                    if (database.Users().existsByUsername(username))
-                        Toast.makeText(this, "Username already used", Toast.LENGTH_SHORT).show()
-                    else if (accountRegisteredStatus > -1) {
+                    println("status is $accountRegisteredStatus")
+                    if (accountRegisteredStatus > -1) {
                         val intent = Intent(this, SignInActivity::class.java)
-
+                        startActivity(intent)
                     } else {
-                        Toast.makeText(this, "Incorrect details", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Invalid details", Toast.LENGTH_SHORT).show()
                     }
 
                 } else {
@@ -49,4 +48,7 @@ class SignUpActivity : AppCompatActivity() {
             }
         }
     }
+
+
+
 }

@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.routine_main.*
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
     private lateinit var toolbar : Toolbar
     private lateinit var drawerLayout : DrawerLayout
     private lateinit var navigationView : NavigationView
-
+    private lateinit var database : Database
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,7 +56,7 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
         setContentView(R.layout.activity_main)
 
         // location part
-        val database = Database(this)
+        database = Database(this)
         val username = MyApplication.username
         val button: Button = findViewById(R.id.getLocation)
         val button2: Button = findViewById(R.id.getLocation2)
@@ -120,10 +121,20 @@ class MainActivity : AppCompatActivity(),LocationListener,NavigationView.OnNavig
             val intent = Intent(this, Store::class.java)
             startActivity(intent)
         }
-        //todo create setting page
         if (item.title == "Settings") {
-            val intent = Intent(this, Store::class.java)
-            startActivity(intent)
+            AlertDialog.Builder(this)
+                .setTitle("Delete entry")
+                .setMessage("Are you sure you want to delete your account? ALl of your personal data will be permanently deleted") // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton(
+                    android.R.string.yes
+                ) { dialog, which ->
+                    database.Users().deleteUser(MyApplication.username)
+                } // A null listener allows the button to dismiss the dialog and take no further action.
+                .setNegativeButton(android.R.string.no, null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show()
+
         }
 
         if (item.title == "Routines") {
